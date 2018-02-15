@@ -42,19 +42,19 @@
 /*-----------------------------------------------------------------------*/
 #define _GNU_SOURCE
 
-# include <stdio.h>
-# include <math.h>
-# include <float.h>
-# include <limits.h>
-# include <sys/time.h>
-# include <malloc.h>
-# include <pthread.h>
-# include <numa.h>
+#include <stdio.h>
+#include <math.h>
+#include <float.h>
+#include <limits.h>
+#include <sys/time.h>
+#include <malloc.h>
+#include <pthread.h>
+#include <numa.h>
 
 /* INSTRUCTIONS:
  *
  *	1) Stream requires a good bit of memory to run.  Adjust the
- *          value of 'N' (below) to give a 'timing calibration' of 
+ *          value of 'N' (below) to give a 'timing calibration' of
  *          at least 20 clock-ticks.  This will provide rate estimates
  *          that should be good to about 5% precision.
  */
@@ -73,15 +73,15 @@
 
 
 /*
-node   0   1   2   3   4   5   6   7 
-0:  10  16  16  22  16  22  16  22 
-1:  16  10  16  22  22  16  22  16 
-2:  16  16  10  16  16  16  16  22 
-3:  22  22  16  10  16  16  22  16 
-4:  16  22  16  16  10  16  16  16 
-5:  22  16  16  16  16  10  22  22 
-6:  16  22  16  22  16  22  10  16 
-7:  22  16  22  16  16  22  16  10 
+node   0   1   2   3   4   5   6   7
+0:  10  16  16  22  16  22  16  22
+1:  16  10  16  22  22  16  22  16
+2:  16  16  10  16  16  16  16  22
+3:  22  22  16  10  16  16  22  16
+4:  16  22  16  16  10  16  16  16
+5:  22  16  16  16  16  10  22  22
+6:  16  22  16  22  16  22  10  16
+7:  22  16  22  16  16  22  16  10
 */
 
 #ifndef N
@@ -129,10 +129,11 @@ node   0   1   2   3   4   5   6   7
 static double	**a, **b, **c;
 
 static double	avgtime[5] = {0}, maxtime[5] = {0},
-    mintime[5] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
+                             mintime[5] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
 
 static char	*label[5] = {"Read:      ","Copy:      ", "Scale:     ",
-    "Add:       ", "Triad:     "};
+                         "Add:       ", "Triad:     "
+                        };
 
 static double	bytes[5] = {
     1 * sizeof(double) * N * NUM_THREADS * REPEAT / STRIDE,
@@ -140,7 +141,7 @@ static double	bytes[5] = {
     2 * sizeof(double) * N * NUM_THREADS * REPEAT / STRIDE,
     3 * sizeof(double) * N * NUM_THREADS * REPEAT / STRIDE,
     3 * sizeof(double) * N * NUM_THREADS * REPEAT / STRIDE
-    };
+};
 
 extern double mysecond();
 extern void checkSTREAMresults();
@@ -150,9 +151,11 @@ typedef struct Arg_T  {
     int allocNode;
 } arg_t;
 
+
 double results[NUM_THREADS];
-    
-void *readProc(void *arg) {
+
+void *readProc(void *arg)
+{
     arg_t *pArg = (arg_t*)arg;
     int me = pArg->proc;
     if (numa_run_on_node (me) == -1) {
@@ -174,7 +177,8 @@ void *readProc(void *arg) {
     return NULL;
 }
 
-void *copyProc(void *arg) {
+void *copyProc(void *arg)
+{
     arg_t *pArg = (arg_t*)arg;
     int me = pArg->proc;
     if (numa_run_on_node (me) == -1) {
@@ -192,7 +196,8 @@ void *copyProc(void *arg) {
     return NULL;
 }
 
-void *scaleProc(void *arg) {
+void *scaleProc(void *arg)
+{
     arg_t *pArg = (arg_t*)arg;
     int me = pArg->proc;
     if (numa_run_on_node (me) == -1) {
@@ -209,7 +214,8 @@ void *scaleProc(void *arg) {
     }
 }
 
-void *addProc(void *arg) {
+void *addProc(void *arg)
+{
     arg_t *pArg = (arg_t*)arg;
     int me = pArg->proc;
     if (numa_run_on_node (me) == -1) {
@@ -228,7 +234,8 @@ void *addProc(void *arg) {
     return NULL;
 }
 
-void *triadProc(void *arg) {
+void *triadProc(void *arg)
+{
     arg_t *pArg = (arg_t*)arg;
     int me = pArg->proc;
     if (numa_run_on_node (me) == -1) {
@@ -249,7 +256,7 @@ void *triadProc(void *arg) {
 
 int
 main(int argc, char *argv[])
-    {
+{
     int			quantum, checktick();
     int			BytesPerWord;
     register int	j, k;
@@ -262,7 +269,7 @@ main(int argc, char *argv[])
     printf(HLINE);
     BytesPerWord = sizeof(double);
     printf("This system uses %d bytes per DOUBLE PRECISION word.\n",
-	BytesPerWord);
+           BytesPerWord);
 
     printf(HLINE);
 #ifdef NO_LONG_LONG
@@ -272,7 +279,7 @@ main(int argc, char *argv[])
 #endif
 
     printf("Total memory required = %.1f MB.\n",
-	(3.0 * BytesPerWord) * ( (double) N / 1048576.0) * NUM_THREADS);
+           (3.0 * BytesPerWord) * ( (double) N / 1048576.0) * NUM_THREADS);
     printf("Each test is run %d times, but only\n", NTIMES);
     printf("the *best* time for each is used.\n");
 
@@ -292,14 +299,13 @@ main(int argc, char *argv[])
     pthread_t* threads=(pthread_t *)malloc(NUM_THREADS*sizeof(pthread_t));
     pthread_attr_t pthread_custom_attr;
     pthread_attr_init(&pthread_custom_attr);
-    
+
     arg_t *p=(arg_t*)malloc(sizeof(arg_t)*NUM_THREADS);
-    for (int i=0; i<NUM_THREADS; i++)
-    {
+    for (int i=0; i<NUM_THREADS; i++) {
         p[i].proc=i%num_nodes;
         p[i].allocNode = ((i+MEM_OFF)%num_nodes);
     }
-    
+
     /* Allocate memory for the threads */
     a = (double**)malloc(sizeof(double*)*NUM_THREADS);
     b = (double**)malloc(sizeof(double*)*NUM_THREADS);
@@ -323,28 +329,25 @@ main(int argc, char *argv[])
 
     printf(HLINE);
 
-    if  ( (quantum = checktick()) >= 1) 
-	printf("Your clock granularity/precision appears to be "
-	    "%d microseconds.\n", quantum);
+    if  ( (quantum = checktick()) >= 1)
+        printf("Your clock granularity/precision appears to be "
+               "%d microseconds.\n", quantum);
     else {
-	printf("Your clock granularity appears to be "
-	    "less than one microsecond.\n");
-	quantum = 1;
+        printf("Your clock granularity appears to be "
+               "less than one microsecond.\n");
+        quantum = 1;
     }
 
     printf(HLINE);
-    
+
     /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
-    for (k=0; k<NTIMES; k++)
-	{
+    for (k=0; k<NTIMES; k++) {
         /* READ */
         times[0][k] = mysecond();
-        for (int i=0; i<NUM_THREADS; i++)
-        {
+        for (int i=0; i<NUM_THREADS; i++) {
             pthread_create(&threads[i], &pthread_custom_attr, readProc, (void *)(p+i));
         }
-        for (int i=0; i<NUM_THREADS; i++)
-        {
+        for (int i=0; i<NUM_THREADS; i++) {
             pthread_join(threads[i], NULL);
         }
         times[0][k] = mysecond() - times[0][k];
@@ -352,48 +355,40 @@ main(int argc, char *argv[])
         printf (".");
         /* COPY */
         times[1][k] = mysecond();
-        for (int i=0; i<NUM_THREADS; i++)
-        {
+        for (int i=0; i<NUM_THREADS; i++) {
             pthread_create(&threads[i], &pthread_custom_attr, copyProc, (void *)(p+i));
         }
-        for (int i=0; i<NUM_THREADS; i++)
-        {
+        for (int i=0; i<NUM_THREADS; i++) {
             pthread_join(threads[i], NULL);
         }
         times[1][k] = mysecond() - times[1][k];
 
         /* SCALE */
         times[2][k] = mysecond();
-        for (int i=0; i<NUM_THREADS; i++)
-        {
+        for (int i=0; i<NUM_THREADS; i++) {
             pthread_create(&threads[i], &pthread_custom_attr, scaleProc, (void *)(p+i));
         }
-        for (int i=0; i<NUM_THREADS; i++)
-        {
+        for (int i=0; i<NUM_THREADS; i++) {
             pthread_join(threads[i], NULL);
         }
         times[2][k] = mysecond() - times[2][k];
 
         /* ADD */
         times[3][k] = mysecond();
-        for (int i=0; i<NUM_THREADS; i++)
-        {
+        for (int i=0; i<NUM_THREADS; i++) {
             pthread_create(&threads[i], &pthread_custom_attr, addProc, (void *)(p+i));
         }
-        for (int i=0; i<NUM_THREADS; i++)
-        {
+        for (int i=0; i<NUM_THREADS; i++) {
             pthread_join(threads[i], NULL);
         }
         times[3][k] = mysecond() - times[3][k];
 
         /* TRIAD */
         times[4][k] = mysecond();
-        for (int i=0; i<NUM_THREADS; i++)
-        {
+        for (int i=0; i<NUM_THREADS; i++) {
             pthread_create(&threads[i], &pthread_custom_attr, triadProc, (void *)(p+i));
         }
-        for (int i=0; i<NUM_THREADS; i++)
-        {
+        for (int i=0; i<NUM_THREADS; i++) {
             pthread_join(threads[i], NULL);
         }
         times[4][k] = mysecond() - times[4][k];
@@ -401,29 +396,27 @@ main(int argc, char *argv[])
     printf ("\n");
 
 
-    
+
     /*	--- SUMMARY --- */
 
-    for (k=1; k<NTIMES; k++) /* note -- skip first iteration */
-	{
-	for (j=0; j<5; j++)
-	    {
-	    avgtime[j] = avgtime[j] + times[j][k];
-	    mintime[j] = MIN(mintime[j], times[j][k]);
-	    maxtime[j] = MAX(maxtime[j], times[j][k]);
-	    }
-	}
-    
+    for (k=1; k<NTIMES; k++) { /* note -- skip first iteration */
+        for (j=0; j<5; j++) {
+            avgtime[j] = avgtime[j] + times[j][k];
+            mintime[j] = MIN(mintime[j], times[j][k]);
+            maxtime[j] = MAX(maxtime[j], times[j][k]);
+        }
+    }
+
     printf("Function      Rate (MB/s)   Latency(ns)   Avg time     Min time     Max time\n");
     for (j=0; j<5; j++) {
-	avgtime[j] = avgtime[j]/(double)(NTIMES-1);
+        avgtime[j] = avgtime[j]/(double)(NTIMES-1);
 
-	printf("%s%11.4f  %11.4f  %11.4f  %11.4f  %11.4f\n", label[j],
-	       1.0E-06 * bytes[j]/avgtime[j],
-           (avgtime[j]/(bytes[j]/(sizeof(double)*NUM_THREADS)))*1.0E9,
-	       avgtime[j],
-	       mintime[j],
-	       maxtime[j]);
+        printf("%s%11.4f  %11.4f  %11.4f  %11.4f  %11.4f\n", label[j],
+               1.0E-06 * bytes[j]/avgtime[j],
+               (avgtime[j]/(bytes[j]/(sizeof(double)*NUM_THREADS)))*1.0E9,
+               avgtime[j],
+               mintime[j],
+               maxtime[j]);
     }
     printf(HLINE);
 
@@ -434,33 +427,33 @@ main(int argc, char *argv[])
 
 int
 checktick()
-    {
+{
     int		i, minDelta, Delta;
     double	t1, t2, timesfound[M];
 
-/*  Collect a sequence of M unique time values from the system. */
+    /*  Collect a sequence of M unique time values from the system. */
 
     for (i = 0; i < M; i++) {
-	t1 = mysecond();
-	while( ((t2=mysecond()) - t1) < 1.0E-6 )
-	    ;
-	timesfound[i] = t1 = t2;
-	}
+        t1 = mysecond();
+        while( ((t2=mysecond()) - t1) < 1.0E-6 )
+            ;
+        timesfound[i] = t1 = t2;
+    }
 
-/*
- * Determine the minimum difference between these M values.
- * This result will be our estimate (in microseconds) for the
- * clock granularity.
- */
+    /*
+     * Determine the minimum difference between these M values.
+     * This result will be our estimate (in microseconds) for the
+     * clock granularity.
+     */
 
     minDelta = 1000000;
     for (i = 1; i < M; i++) {
-	Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
-	minDelta = MIN(minDelta, MAX(Delta,0));
-	}
-
-   return(minDelta);
+        Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
+        minDelta = MIN(minDelta, MAX(Delta,0));
     }
+
+    return(minDelta);
+}
 
 
 
@@ -471,9 +464,10 @@ checktick()
 
 double mysecond()
 {
-        struct timeval tp;
-        int i;
+    struct timeval tp;
+    int i;
 
-        i = gettimeofday(&tp,NULL);
-        return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
+    i = gettimeofday(&tp,NULL);
+    return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
 }
+
