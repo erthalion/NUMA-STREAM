@@ -307,16 +307,16 @@ main(int argc, char *argv[])
     }
 
     /* Allocate memory for the threads */
-    a = (double**)malloc(sizeof(double*)*NUM_THREADS);
-    b = (double**)malloc(sizeof(double*)*NUM_THREADS);
-    c = (double**)malloc(sizeof(double*)*NUM_THREADS);
+    a = (long double**)malloc(sizeof(long double*)*NUM_THREADS);
+    b = (long double**)malloc(sizeof(long double*)*NUM_THREADS);
+    c = (long double**)malloc(sizeof(long double*)*NUM_THREADS);
 
     for (int i = 0; i < NUM_THREADS; i++) {
-        a[i] = numa_alloc_onnode(sizeof(double)*N, p[i].allocNode);
-        b[i] = numa_alloc_onnode(sizeof(double)*N, p[i].allocNode);
-        c[i] = numa_alloc_onnode(sizeof(double)*N, p[i].allocNode);
+        a[i] = numa_alloc_onnode(sizeof(long double)*N, p[i].allocNode);
+        b[i] = numa_alloc_onnode(sizeof(long double)*N, p[i].allocNode);
+        c[i] = numa_alloc_onnode(sizeof(long double)*N, p[i].allocNode);
         if ((a[i] == NULL) || (b[i] == NULL) || (c[i] == NULL)) {
-            printf ("Failed to allocate %d bytes on node %d\n", (int)sizeof(double)*N, p[i].allocNode);
+            printf ("Failed to allocate %d bytes on node %d\n", (int)sizeof(long double)*N, p[i].allocNode);
             exit (-1);
         }
 

@@ -70,18 +70,18 @@
  *
  */
 
-# include <stdio.h>
-# include <stdlib.h>
-# include <math.h>
-# include <float.h>
-# include <limits.h>
-# include <sys/time.h>
-# include <numa.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <float.h>
+#include <limits.h>
+#include <sys/time.h>
+#include <numa.h>
 
 /* INSTRUCTIONS:
  *
  *	1) Stream requires a good bit of memory to run.  Adjust the
- *          value of 'N' (below) to give a 'timing calibration' of 
+ *          value of 'N' (below) to give a 'timing calibration' of
  *          at least 20 clock-ticks.  This will provide rate estimates
  *          that should be good to about 5% precision.
  */
@@ -118,29 +118,30 @@
  *
  */
 
-# define HLINE "-------------------------------------------------------------\n"
+#define HLINE "-------------------------------------------------------------\n"
 
-# ifndef MIN
-# define MIN(x,y) ((x)<(y)?(x):(y))
-# endif
-# ifndef MAX
-# define MAX(x,y) ((x)>(y)?(x):(y))
-# endif
+#ifndef MIN
+#define MIN(x,y) ((x)<(y)?(x):(y))
+#endif
+#ifndef MAX
+#define MAX(x,y) ((x)>(y)?(x):(y))
+#endif
 
 double *a, *b, *c;
 
 static double	avgtime[4] = {0}, maxtime[4] = {0},
-		mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
+							 mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
 
 static char	*label[4] = {"Copy:      ", "Scale:     ",
-    "Add:       ", "Triad:     "};
+						 "Add:       ", "Triad:     "
+						};
 
 static double	bytes[4] = {
-    2 * sizeof(double) * N / STRIDE,
-    2 * sizeof(double) * N / STRIDE,
-    3 * sizeof(double) * N / STRIDE,
-    3 * sizeof(double) * N / STRIDE
-    };
+	2 * sizeof(double) * N / STRIDE,
+	2 * sizeof(double) * N / STRIDE,
+	3 * sizeof(double) * N / STRIDE,
+	3 * sizeof(double) * N / STRIDE
+};
 
 extern double mysecond();
 extern void checkSTREAMresults (long length, double *a, double *b, double *c);
@@ -149,26 +150,26 @@ extern int omp_get_num_threads();
 #endif
 int
 main()
-    {
-    int			quantum, checktick();
-    int			BytesPerWord;
+{
+	int			quantum, checktick();
+	int			BytesPerWord;
 
-    register int	i, j, k;
-    double		scalar, t, times[4][NTIMES];
-    
-/* --- SETUP --- determine precision and check timing --- */
+	register int	i, j, k;
+	double		scalar, t, times[4][NTIMES];
 
-    printf(HLINE);
-    printf("STREAM version $Revision: 5.9 $\n");
-    printf(HLINE);
-    BytesPerWord = sizeof(double);
-    printf("This system uses %d bytes per DOUBLE PRECISION word.\n",
-	BytesPerWord);
+	/* --- SETUP --- determine precision and check timing --- */
 
-    if (numa_available() < 0) {
-        printf ("System does not support NUMA.\n");
-        exit (1);
-    }
+	printf(HLINE);
+	printf("STREAM version $Revision: 5.9 $\n");
+	printf(HLINE);
+	BytesPerWord = sizeof(double);
+	printf("This system uses %d bytes per DOUBLE PRECISION word.\n",
+		   BytesPerWord);
+
+	if (numa_available() < 0) {
+		printf ("System does not support NUMA.\n");
+		exit (1);
+	}
 
 	a = malloc(sizeof(double)*(N));
 	b = malloc(sizeof(double)*(N));
@@ -180,175 +181,175 @@ main()
 		exit(1);
 	}
 
-    printf(HLINE);
-    printf("Array size = %d\n" , N);
-    printf("Total memory required = %.1f MB.\n",
-	(3.0 * BytesPerWord) * ( (double) N / 1048576.0));
-    printf("Each test is run %d times, but only\n", NTIMES);
-    printf("the *best* time for each is used.\n");
+	printf(HLINE);
+	printf("Array size = %d\n" , N);
+	printf("Total memory required = %.1f MB.\n",
+		   (3.0 * BytesPerWord) * ( (double) N / 1048576.0));
+	printf("Each test is run %d times, but only\n", NTIMES);
+	printf("the *best* time for each is used.\n");
 
 #ifdef _OPENMP
-    printf(HLINE);
-#pragma omp parallel 
-    {
-#pragma omp master
+	printf(HLINE);
+	#pragma omp parallel
 	{
-	    k = omp_get_num_threads();
-	    printf ("Number of Threads requested = %i\n",k);
+		#pragma omp master
+		{
+			k = omp_get_num_threads();
+			printf ("Number of Threads requested = %i\n",k);
 
 
-        }
-    }
+		}
+	}
 #endif
 
-    int num_nodes = numa_max_node()+1;
-    printf ("Number of available nodes = %i\n", num_nodes);
+	int num_nodes = numa_max_node()+1;
+	printf ("Number of available nodes = %i\n", num_nodes);
 
-#pragma omp parallel for private(i)
+	#pragma omp parallel for private(i)
 	for (j=0; j<k; j++) {
 		i = j%num_nodes;
-        numa_run_on_node(i);
+		numa_run_on_node(i);
 	}
 
 
-    /* Get initial value for system clock. */
-#pragma omp parallel for
-    for (j=0; j<N; j++) {
+	/* Get initial value for system clock. */
+	#pragma omp parallel for
+	for (j=0; j<N; j++) {
 		a[j] = 1.0;
 		b[j] = 2.0;
 		c[j] = 0.0;
 	}
 
 #ifdef NON_NUMA
-#pragma omp parallel for private(i)
+	#pragma omp parallel for private(i)
 	for (j=0; j<k; j++) {
 		i = (j+1)%num_nodes;
-        numa_run_on_node(i);
+		numa_run_on_node(i);
 	}
-    printf("Execution will be non-NUMA aware.\n");
+	printf("Execution will be non-NUMA aware.\n");
 #endif
-    printf(HLINE);
+	printf(HLINE);
 
-    if  ( (quantum = checktick()) >= 1) 
-	printf("Your clock granularity/precision appears to be "
-	    "%d microseconds.\n", quantum);
-    else {
-	printf("Your clock granularity appears to be "
-	    "less than one microsecond.\n");
-	quantum = 1;
-    }
+	if  ( (quantum = checktick()) >= 1)
+		printf("Your clock granularity/precision appears to be "
+			   "%d microseconds.\n", quantum);
+	else {
+		printf("Your clock granularity appears to be "
+			   "less than one microsecond.\n");
+		quantum = 1;
+	}
 
-    t = mysecond();
-#pragma omp parallel for
-    for (j = 0; j < N; j++)
+	t = mysecond();
+	#pragma omp parallel for
+	for (j = 0; j < N; j++)
 		a[j] = 2.0E0 * a[j];
-    t = 1.0E6 * (mysecond() - t);
+	t = 1.0E6 * (mysecond() - t);
 
-    printf("Each test below will take on the order"
-	" of %d microseconds.\n", (int) t  );
-    printf("   (= %d clock ticks)\n", (int) (t/quantum) );
-    printf("Increase the size of the arrays if this shows that\n");
-    printf("you are not getting at least 20 clock ticks per test.\n");
+	printf("Each test below will take on the order"
+		   " of %d microseconds.\n", (int) t  );
+	printf("   (= %d clock ticks)\n", (int) (t/quantum) );
+	printf("Increase the size of the arrays if this shows that\n");
+	printf("you are not getting at least 20 clock ticks per test.\n");
 
-    printf(HLINE);
+	printf(HLINE);
 
-    printf("WARNING -- The above is only a rough guideline.\n");
-    printf("For best results, please be sure you know the\n");
-    printf("precision of your system timer.\n");
-    printf(HLINE);
-    
-    /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
+	printf("WARNING -- The above is only a rough guideline.\n");
+	printf("For best results, please be sure you know the\n");
+	printf("precision of your system timer.\n");
+	printf(HLINE);
 
-    scalar = 3.0;
-    for (k=0; k<NTIMES; k++)
+	/*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
+
+	scalar = 3.0;
+	for (k=0; k<NTIMES; k++)
 	{
-	times[0][k] = mysecond();
-#pragma omp parallel for
-	for (j=0; j<N; j+=STRIDE)
-	    c[j] = a[j];
-	times[0][k] = mysecond() - times[0][k];
-	
-	times[1][k] = mysecond();
-#pragma omp parallel for
-	for (j=0; j<N; j+=STRIDE)
-	    b[j] = scalar*c[j];
-	times[1][k] = mysecond() - times[1][k];
-	
-	times[2][k] = mysecond();
-#pragma omp parallel for
-	for (j=0; j<N; j+=STRIDE)
-	    c[j] = a[j]+b[j];
-	times[2][k] = mysecond() - times[2][k];
-	
-	times[3][k] = mysecond();
-#pragma omp parallel for
-	for (j=0; j<N; j+=STRIDE)
-	    a[j] = b[j]+scalar*c[j];
-	times[3][k] = mysecond() - times[3][k];
+		times[0][k] = mysecond();
+		#pragma omp parallel for
+		for (j=0; j<N; j+=STRIDE)
+			c[j] = a[j];
+		times[0][k] = mysecond() - times[0][k];
+
+		times[1][k] = mysecond();
+		#pragma omp parallel for
+		for (j=0; j<N; j+=STRIDE)
+			b[j] = scalar*c[j];
+		times[1][k] = mysecond() - times[1][k];
+
+		times[2][k] = mysecond();
+		#pragma omp parallel for
+		for (j=0; j<N; j+=STRIDE)
+			c[j] = a[j]+b[j];
+		times[2][k] = mysecond() - times[2][k];
+
+		times[3][k] = mysecond();
+		#pragma omp parallel for
+		for (j=0; j<N; j+=STRIDE)
+			a[j] = b[j]+scalar*c[j];
+		times[3][k] = mysecond() - times[3][k];
 	}
 
-    /*	--- SUMMARY --- */
+	/*	--- SUMMARY --- */
 
-    for (k=1; k<NTIMES; k++) /* note -- skip first iteration */
+	for (k=1; k<NTIMES; k++) /* note -- skip first iteration */
 	{
-	for (j=0; j<4; j++)
-	    {
-	    avgtime[j] = avgtime[j] + times[j][k];
-	    mintime[j] = MIN(mintime[j], times[j][k]);
-	    maxtime[j] = MAX(maxtime[j], times[j][k]);
-	    }
+		for (j=0; j<4; j++)
+		{
+			avgtime[j] = avgtime[j] + times[j][k];
+			mintime[j] = MIN(mintime[j], times[j][k]);
+			maxtime[j] = MAX(maxtime[j], times[j][k]);
+		}
 	}
-    
-    printf("Function      Rate (MB/s)   Avg time     Min time     Max time\n");
-    for (j=0; j<4; j++) {
-	avgtime[j] = avgtime[j]/(double)(NTIMES-1);
 
-	printf("%s%11.4f  %11.4f  %11.4f  %11.4f\n", label[j],
-	       1.0E-06 * bytes[j]/mintime[j],
-	       avgtime[j],
-	       mintime[j],
-	       maxtime[j]);
-    }
-    printf(HLINE);
+	printf("Function      Rate (MB/s)   Avg time     Min time     Max time\n");
+	for (j=0; j<4; j++) {
+		avgtime[j] = avgtime[j]/(double)(NTIMES-1);
 
-    /* --- Check Results --- */
-    checkSTREAMresults((long) N, a, b, c);
-    printf(HLINE);
+		printf("%s%11.4f  %11.4f  %11.4f  %11.4f\n", label[j],
+			   1.0E-06 * bytes[j]/mintime[j],
+			   avgtime[j],
+			   mintime[j],
+			   maxtime[j]);
+	}
+	printf(HLINE);
 
-    return 0;
+	/* --- Check Results --- */
+	checkSTREAMresults((long) N, a, b, c);
+	printf(HLINE);
+
+	return 0;
 }
 
 # define	M	20
 
 int
 checktick()
-    {
-    int		i, minDelta, Delta;
-    double	t1, t2, timesfound[M];
+{
+	int		i, minDelta, Delta;
+	double	t1, t2, timesfound[M];
 
-/*  Collect a sequence of M unique time values from the system. */
+	/*  Collect a sequence of M unique time values from the system. */
 
-    for (i = 0; i < M; i++) {
-	t1 = mysecond();
-	while( ((t2=mysecond()) - t1) < 1.0E-6 )
-	    ;
-	timesfound[i] = t1 = t2;
+	for (i = 0; i < M; i++) {
+		t1 = mysecond();
+		while( ((t2=mysecond()) - t1) < 1.0E-6 )
+			;
+		timesfound[i] = t1 = t2;
 	}
 
-/*
- * Determine the minimum difference between these M values.
- * This result will be our estimate (in microseconds) for the
- * clock granularity.
- */
+	/*
+	 * Determine the minimum difference between these M values.
+	 * This result will be our estimate (in microseconds) for the
+	 * clock granularity.
+	 */
 
-    minDelta = 1000000;
-    for (i = 1; i < M; i++) {
-	Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
-	minDelta = MIN(minDelta, MAX(Delta,0));
+	minDelta = 1000000;
+	for (i = 1; i < M; i++) {
+		Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
+		minDelta = MIN(minDelta, MAX(Delta,0));
 	}
 
-   return(minDelta);
-    }
+	return(minDelta);
+}
 
 
 
@@ -359,21 +360,21 @@ checktick()
 
 double mysecond()
 {
-        struct timeval tp;
-        int i;
+	struct timeval tp;
+	int i;
 
-        i = gettimeofday(&tp,NULL);
-        return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
+	i = gettimeofday(&tp,NULL);
+	return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
 }
 
 
-/* ----------------------------------------------- 
+/* -----------------------------------------------
    Check the results to make sure all the loops
-   have actually been run.   
+   have actually been run.
    This revised version (in 5.9 and above) sums the
-   absolute errors across the arrays, rather than 
+   absolute errors across the arrays, rather than
    summing the values in the arrays and comparing
-   with the expected sum.  This version is much 
+   with the expected sum.  This version is much
    less sensitive to accumulation of roundoff error.
 -------------------------------------------------- */
 void checkSTREAMresults (long length, double *a, double *b, double *c)
@@ -383,24 +384,24 @@ void checkSTREAMresults (long length, double *a, double *b, double *c)
 	double epsilon;
 	int	j,k,fail=0;
 
-    /* reproduce initialization */
+	/* reproduce initialization */
 	aj = 1.0;
 	bj = 2.0;
 	cj = 0.0;
-    /* a[] is modified during timing check */
+	/* a[] is modified during timing check */
 	aj = 2.0E0 * aj;
-    /* now execute timing loop */
+	/* now execute timing loop */
 	scalar = 3.0;
 	for (k=0; k<NTIMES; k++)
-        {
-            cj = aj;
-            bj = scalar*cj;
-            cj = aj+bj;
-            aj = bj+scalar*cj;
-        }
-    /* now aj, bj, and cj have values that should match each element */
-    /* of arrays a[], b[], and c[] -- unless I modified the code to */
-    /* fiddle with some entries to confuse optimizers -- watch for this */
+	{
+		cj = aj;
+		bj = scalar*cj;
+		cj = aj+bj;
+		aj = bj+scalar*cj;
+	}
+	/* now aj, bj, and cj have values that should match each element */
+	/* of arrays a[], b[], and c[] -- unless I modified the code to */
+	/* fiddle with some entries to confuse optimizers -- watch for this */
 
 #ifdef VERBOSE
 	printf ("Comparison of specific values at midpoint of arrays: \n");
