@@ -127,24 +127,24 @@
 #define MAX(x,y) ((x)>(y)?(x):(y))
 #endif
 
-double *a, *b, *c;
+long double *a, *b, *c;
 
-static double	avgtime[4] = {0}, maxtime[4] = {0},
+static long double	avgtime[4] = {0}, maxtime[4] = {0},
 							 mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
 
 static char	*label[4] = {"Copy:      ", "Scale:     ",
 						 "Add:       ", "Triad:     "
 						};
 
-static double	bytes[4] = {
-	2 * sizeof(double) * N / STRIDE,
-	2 * sizeof(double) * N / STRIDE,
-	3 * sizeof(double) * N / STRIDE,
-	3 * sizeof(double) * N / STRIDE
+static long double	bytes[4] = {
+	2 * sizeof(long double) * N / STRIDE,
+	2 * sizeof(long double) * N / STRIDE,
+	3 * sizeof(long double) * N / STRIDE,
+	3 * sizeof(long double) * N / STRIDE
 };
 
-extern double mysecond();
-extern void checkSTREAMresults (long length, double *a, double *b, double *c);
+extern long double mysecond();
+extern void checkSTREAMresults (long length, long double *a, long double *b, long double *c);
 #ifdef _OPENMP
 extern int omp_get_num_threads();
 #endif
@@ -155,15 +155,15 @@ main()
 	int			BytesPerWord;
 
 	register int	i, j, k;
-	double		scalar, t, times[4][NTIMES];
+	long double		scalar, t, times[4][NTIMES];
 
 	/* --- SETUP --- determine precision and check timing --- */
 
 	printf(HLINE);
 	printf("STREAM version $Revision: 5.9 $\n");
 	printf(HLINE);
-	BytesPerWord = sizeof(double);
-	printf("This system uses %d bytes per DOUBLE PRECISION word.\n",
+	BytesPerWord = sizeof(long double);
+	printf("This system uses %d bytes per long double PRECISION word.\n",
 		   BytesPerWord);
 
 	if (numa_available() < 0) {
@@ -171,9 +171,9 @@ main()
 		exit (1);
 	}
 
-	a = malloc(sizeof(double)*(N));
-	b = malloc(sizeof(double)*(N));
-	c = malloc(sizeof(double)*(N));
+	a = malloc(sizeof(long double)*(N));
+	b = malloc(sizeof(long double)*(N));
+	c = malloc(sizeof(long double)*(N));
 
 	if (a==0 | b==0 | c==0) {
 		printf("ERROR: one of the malloc's failed\n");
@@ -184,7 +184,7 @@ main()
 	printf(HLINE);
 	printf("Array size = %d\n" , N);
 	printf("Total memory required = %.1f MB.\n",
-		   (3.0 * BytesPerWord) * ( (double) N / 1048576.0));
+		   (3.0 * BytesPerWord) * ( (long double) N / 1048576.0));
 	printf("Each test is run %d times, but only\n", NTIMES);
 	printf("the *best* time for each is used.\n");
 
@@ -302,7 +302,7 @@ main()
 
 	printf("Function      Rate (MB/s)   Avg time     Min time     Max time\n");
 	for (j=0; j<4; j++) {
-		avgtime[j] = avgtime[j]/(double)(NTIMES-1);
+		avgtime[j] = avgtime[j]/(long double)(NTIMES-1);
 
 		printf("%s%11.4f  %11.4f  %11.4f  %11.4f\n", label[j],
 			   1.0E-06 * bytes[j]/mintime[j],
@@ -325,7 +325,7 @@ int
 checktick()
 {
 	int		i, minDelta, Delta;
-	double	t1, t2, timesfound[M];
+	long double	t1, t2, timesfound[M];
 
 	/*  Collect a sequence of M unique time values from the system. */
 
@@ -358,13 +358,13 @@ checktick()
 
 #include <sys/time.h>
 
-double mysecond()
+long double mysecond()
 {
 	struct timeval tp;
 	int i;
 
 	i = gettimeofday(&tp,NULL);
-	return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
+	return ( (long double) tp.tv_sec + (long double) tp.tv_usec * 1.e-6 );
 }
 
 
@@ -377,11 +377,11 @@ double mysecond()
    with the expected sum.  This version is much
    less sensitive to accumulation of roundoff error.
 -------------------------------------------------- */
-void checkSTREAMresults (long length, double *a, double *b, double *c)
+void checkSTREAMresults (long length, long double *a, long double *b, long double *c)
 {
-	double aj,bj,cj,scalar;
-	double asum,bsum,csum;
-	double epsilon;
+	long double aj,bj,cj,scalar;
+	long double asum,bsum,csum;
+	long double epsilon;
 	int	j,k,fail=0;
 
 	/* reproduce initialization */
@@ -420,9 +420,9 @@ void checkSTREAMresults (long length, double *a, double *b, double *c)
 		bsum += abs(b[j] - bj);
 		csum += abs(c[j] - cj);
 	}
-	asum = asum / (double) (length);
-	csum = bsum / (double) (length);
-	csum = csum / (double) (length);
+	asum = asum / (long double) (length);
+	csum = bsum / (long double) (length);
+	csum = csum / (long double) (length);
 #ifdef VERBOSE
 	printf ("Average Absolute Error : \n");
 	printf ("    arrays: a, b, c  : %f %f %f \n",asum,bsum,csum);
